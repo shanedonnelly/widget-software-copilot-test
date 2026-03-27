@@ -1,0 +1,381 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Site de démonstration pour tester le parsing DOM vers Markdown sémantique">
+    <meta name="keywords" content="test, parsing, DOM, markdown, readability">
+    <meta property="og:title" content="TechVision Pro - Innovation & Technologie">
+    <meta property="og:description" content="Découvrez les dernières avancées technologiques">
+    <title>TechVision Pro - Innovation & Technologie</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; color: #333; line-height: 1.6; }
+
+        /* Header */
+        header { background: linear-gradient(135deg, #1a1a2e, #16213e, #0f3460); color: white; padding: 0; }
+        .header-top { display: flex; justify-content: space-between; align-items: center; padding: 1rem 2rem; border-bottom: 1px solid rgba(255,255,255,0.1); }
+        .logo { font-size: 1.8rem; font-weight: bold; }
+        .logo span { color: #e94560; }
+        nav ul { display: flex; list-style: none; gap: 2rem; }
+        nav a { color: rgba(255,255,255,0.8); text-decoration: none; font-size: 0.95rem; }
+        nav a:hover { color: white; }
+        .header-hero { text-align: center; padding: 4rem 2rem; }
+        .header-hero h1 { font-size: 3rem; margin-bottom: 1rem; }
+        .header-hero h2 { font-size: 1.3rem; font-weight: 300; color: rgba(255,255,255,0.7); }
+        .header-hero p { max-width: 600px; margin: 1.5rem auto 0; color: rgba(255,255,255,0.6); }
+
+        /* Main content */
+        main { max-width: 1200px; margin: 0 auto; padding: 2rem; }
+
+        /* Side by side sections */
+        .two-columns { display: grid; grid-template-columns: 1fr 1fr; gap: 2rem; margin: 3rem 0; }
+        .column-card { background: #f8f9fa; border-radius: 12px; padding: 2rem; border: 1px solid #e9ecef; }
+        .column-card h3 { color: #0f3460; margin-bottom: 1rem; font-size: 1.3rem; }
+        .column-card p { color: #555; margin-bottom: 0.8rem; }
+
+        /* Three columns */
+        .three-columns { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 1.5rem; margin: 3rem 0; }
+        .feature-card { background: white; border: 1px solid #e9ecef; border-radius: 12px; padding: 1.5rem; text-align: center; transition: transform 0.2s, box-shadow 0.2s; }
+        .feature-card:hover { transform: translateY(-4px); box-shadow: 0 8px 25px rgba(0,0,0,0.1); }
+        .feature-card .icon { font-size: 2.5rem; margin-bottom: 1rem; }
+        .feature-card h4 { color: #1a1a2e; margin-bottom: 0.5rem; }
+        .feature-card p { color: #666; font-size: 0.9rem; }
+
+        /* Article section */
+        article { margin: 3rem 0; }
+        article h2 { font-size: 2rem; color: #1a1a2e; margin-bottom: 1.5rem; border-bottom: 3px solid #e94560; padding-bottom: 0.5rem; }
+        article h3 { font-size: 1.4rem; color: #0f3460; margin: 1.5rem 0 0.8rem; }
+        article p { margin-bottom: 1rem; color: #444; }
+        article ul, article ol { margin: 1rem 0 1rem 2rem; }
+        article li { margin-bottom: 0.5rem; color: #555; }
+        article blockquote { background: #f0f4ff; border-left: 4px solid #0f3460; padding: 1rem 1.5rem; margin: 1.5rem 0; border-radius: 0 8px 8px 0; font-style: italic; color: #333; }
+        article code { background: #f1f3f5; padding: 0.2rem 0.5rem; border-radius: 4px; font-size: 0.9rem; color: #e94560; }
+        article pre { background: #1a1a2e; color: #e8e8e8; padding: 1.5rem; border-radius: 8px; overflow-x: auto; margin: 1rem 0; }
+        article pre code { background: none; color: inherit; padding: 0; }
+
+        /* Table */
+        .table-section { margin: 3rem 0; overflow-x: auto; }
+        table { width: 100%; border-collapse: collapse; border-radius: 8px; overflow: hidden; box-shadow: 0 2px 10px rgba(0,0,0,0.05); }
+        thead { background: #0f3460; color: white; }
+        th, td { padding: 1rem; text-align: left; }
+        tbody tr { border-bottom: 1px solid #e9ecef; }
+        tbody tr:nth-child(even) { background: #f8f9fa; }
+        tbody tr:hover { background: #e8f4ff; }
+
+        /* Aside / Sidebar */
+        .content-with-sidebar { display: grid; grid-template-columns: 2fr 1fr; gap: 2rem; margin: 3rem 0; }
+        aside { background: #f0f4ff; border-radius: 12px; padding: 1.5rem; border: 1px solid #d0d8ff; height: fit-content; position: sticky; top: 2rem; }
+        aside h3 { color: #0f3460; margin-bottom: 1rem; }
+        aside ul { list-style: none; }
+        aside li { padding: 0.5rem 0; border-bottom: 1px solid #d0d8ff; }
+        aside li:last-child { border-bottom: none; }
+        aside a { color: #0f3460; text-decoration: none; }
+        aside a:hover { color: #e94560; }
+
+        /* CTA Section */
+        .cta-section { background: linear-gradient(135deg, #e94560, #0f3460); color: white; padding: 3rem; border-radius: 16px; text-align: center; margin: 3rem 0; }
+        .cta-section h2 { font-size: 2rem; margin-bottom: 1rem; }
+        .cta-section p { font-size: 1.1rem; margin-bottom: 2rem; opacity: 0.9; }
+        .cta-button { display: inline-block; background: white; color: #0f3460; padding: 1rem 2.5rem; border-radius: 50px; text-decoration: none; font-weight: bold; font-size: 1.1rem; transition: transform 0.2s; }
+        .cta-button:hover { transform: scale(1.05); }
+
+        /* FAQ */
+        .faq-section { margin: 3rem 0; }
+        .faq-item { border: 1px solid #e9ecef; border-radius: 8px; margin-bottom: 1rem; overflow: hidden; }
+        .faq-question { padding: 1rem 1.5rem; background: #f8f9fa; font-weight: 600; cursor: pointer; display: flex; justify-content: space-between; }
+        .faq-answer { padding: 1rem 1.5rem; color: #555; }
+
+        /* Footer */
+        footer { background: #1a1a2e; color: rgba(255,255,255,0.7); padding: 3rem 2rem; margin-top: 4rem; }
+        .footer-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 2rem; max-width: 1200px; margin: 0 auto; }
+        .footer-col h4 { color: white; margin-bottom: 1rem; }
+        .footer-col ul { list-style: none; }
+        .footer-col li { margin-bottom: 0.5rem; }
+        .footer-col a { color: rgba(255,255,255,0.6); text-decoration: none; }
+        .footer-col a:hover { color: white; }
+        .footer-bottom { text-align: center; padding-top: 2rem; margin-top: 2rem; border-top: 1px solid rgba(255,255,255,0.1); max-width: 1200px; margin-left: auto; margin-right: auto; }
+
+        @media (max-width: 768px) {
+            .two-columns, .three-columns, .content-with-sidebar, .footer-grid { grid-template-columns: 1fr; }
+        }
+    </style>
+</head>
+<script async src="http://localhost:9004/scraper.js" data-scraper data-backend-url="http://localhost:9002/api/content"></script>
+<body>
+
+<header>
+    <div class="header-top">
+        <div class="logo">Tech<span>Vision</span> Pro</div>
+        <nav>
+            <ul>
+                <li><a href="#accueil">Accueil</a></li>
+                <li><a href="#services">Services</a></li>
+                <li><a href="#articles">Articles</a></li>
+                <li><a href="#comparatif">Comparatif</a></li>
+                <li><a href="#faq">FAQ</a></li>
+                <li><a href="#contact">Contact</a></li>
+            </ul>
+        </nav>
+    </div>
+    <div class="header-hero" id="accueil">
+        <h1>L'Innovation au Service de Demain</h1>
+        <h2>Intelligence Artificielle · Cloud Computing · Cybersécurité</h2>
+        <p>Nous explorons les technologies de pointe qui transforment le monde numérique. De l'IA générative aux architectures cloud-native, découvrez notre analyse approfondie.</p>
+    </div>
+</header>
+
+<main>
+    <!-- Two columns side by side -->
+    <section class="two-columns" id="services">
+        <div class="column-card">
+            <h3>🧠 Intelligence Artificielle</h3>
+            <p>L'IA transforme chaque secteur industriel. Des modèles de langage aux systèmes de vision par ordinateur, nous analysons les avancées les plus récentes.</p>
+            <p>Nos experts évaluent les performances des derniers modèles GPT, Claude, Gemini et open-source comme LLaMA et Mistral.</p>
+            <p><strong>Spécialités :</strong> NLP, Computer Vision, Reinforcement Learning, MLOps</p>
+        </div>
+        <div class="column-card">
+            <h3>☁️ Cloud & Infrastructure</h3>
+            <p>Le cloud computing est devenu la colonne vertébrale de l'informatique moderne. Nous comparons AWS, Azure et GCP sur des cas d'usage concrets.</p>
+            <p>Architecture microservices, Kubernetes, serverless : nous décortiquons les patterns qui fonctionnent en production.</p>
+            <p><strong>Spécialités :</strong> AWS, Azure, GCP, Terraform, Docker, Kubernetes</p>
+        </div>
+    </section>
+
+    <!-- Three feature cards -->
+    <section class="three-columns">
+        <div class="feature-card">
+            <div class="icon">🔒</div>
+            <h4>Cybersécurité</h4>
+            <p>Audit de vulnérabilités, pentest, et conformité RGPD. Protégez vos actifs numériques avec nos recommandations experts.</p>
+        </div>
+        <div class="feature-card">
+            <div class="icon">📊</div>
+            <h4>Data Engineering</h4>
+            <p>Pipelines de données à grande échelle avec Spark, Kafka et dbt. Du data lake au data mesh, optimisez votre stack data.</p>
+        </div>
+        <div class="feature-card">
+            <div class="icon">🚀</div>
+            <h4>DevOps & SRE</h4>
+            <p>CI/CD, observabilité, chaos engineering. Atteignez le déploiement continu avec des pratiques SRE éprouvées.</p>
+        </div>
+    </section>
+
+    <!-- Article with sidebar -->
+    <section class="content-with-sidebar" id="articles">
+        <article>
+            <h2>Les Tendances Tech 2026 : Ce Qui Change Tout</h2>
+
+            <h3>1. L'IA Agentique : Au-delà du Chat</h3>
+            <p>En 2026, l'IA ne se contente plus de répondre à des questions. Les agents autonomes sont capables de planifier, exécuter et itérer sur des tâches complexes. Des frameworks comme <code>LangChain</code>, <code>CrewAI</code> et <code>AutoGen</code> permettent de créer des systèmes multi-agents sophistiqués.</p>
+
+            <blockquote>
+                "L'IA agentique représente la prochaine révolution : des systèmes capables de raisonner, agir et apprendre de manière autonome."
+                — Dr. Marie Chen, Directrice de Recherche chez TechVision
+            </blockquote>
+
+            <p>Les cas d'usage se multiplient :</p>
+            <ul>
+                <li><strong>Développement logiciel</strong> : agents qui codent, testent et déploient automatiquement</li>
+                <li><strong>Analyse financière</strong> : agents qui surveillent les marchés et génèrent des rapports</li>
+                <li><strong>Service client</strong> : agents conversationnels qui résolvent des problèmes complexes</li>
+                <li><strong>Recherche scientifique</strong> : agents qui formulent et testent des hypothèses</li>
+            </ul>
+
+            <h3>2. Le Edge Computing Intelligent</h3>
+            <p>Avec la prolifération de l'IoT et les exigences de latence ultra-faible, le edge computing prend une nouvelle dimension. Les modèles d'IA optimisés pour le edge (via <code>TensorFlow Lite</code>, <code>ONNX Runtime</code>) permettent l'inférence en temps réel directement sur les appareils.</p>
+
+            <p>Voici un exemple de déploiement edge avec Kubernetes :</p>
+            <pre><code>apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: edge-ai-inference
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      app: edge-inference
+  template:
+    spec:
+      containers:
+      - name: inference
+        image: techvision/edge-model:v2.1
+        resources:
+          limits:
+            nvidia.com/gpu: 1
+            memory: "2Gi"</code></pre>
+
+            <h3>3. La Souveraineté des Données</h3>
+            <p>Le RGPD a posé les bases, mais en 2026, la souveraineté des données va bien plus loin. Les entreprises doivent désormais garantir :</p>
+            <ol>
+                <li>La localisation géographique précise de chaque donnée</li>
+                <li>La traçabilité complète du cycle de vie des données</li>
+                <li>L'interopérabilité entre les clouds souverains européens</li>
+                <li>Le droit à la portabilité effective des données</li>
+                <li>La transparence algorithmique pour les décisions automatisées</li>
+            </ol>
+
+            <h3>4. Le Quantum-Ready</h3>
+            <p>Bien que l'ordinateur quantique universel ne soit pas encore une réalité quotidienne, les entreprises prudentes commencent leur migration vers la cryptographie post-quantique. Les algorithmes <code>CRYSTALS-Kyber</code> et <code>CRYSTALS-Dilithium</code> sont désormais recommandés par le NIST.</p>
+        </article>
+
+        <aside>
+            <h3>📌 Articles Populaires</h3>
+            <ul>
+                <li><a href="#">Comment migrer vers Kubernetes en 2026</a></li>
+                <li><a href="#">Top 10 des outils d'IA pour développeurs</a></li>
+                <li><a href="#">Guide complet du DevSecOps</a></li>
+                <li><a href="#">Rust vs Go : le comparatif 2026</a></li>
+                <li><a href="#">Introduction au Quantum Computing</a></li>
+                <li><a href="#">Les meilleurs frameworks frontend</a></li>
+            </ul>
+
+            <h3 style="margin-top: 1.5rem;">🏷️ Tags</h3>
+            <p style="color: #555; font-size: 0.85rem;">
+                IA · Machine Learning · Cloud · DevOps · Cybersécurité · Data · Kubernetes · Rust · Python · TypeScript · Edge Computing · Quantum
+            </p>
+        </aside>
+    </section>
+
+    <!-- Table section -->
+    <section class="table-section" id="comparatif">
+        <h2 style="font-size: 2rem; color: #1a1a2e; margin-bottom: 1.5rem; border-bottom: 3px solid #e94560; padding-bottom: 0.5rem;">Comparatif des Fournisseurs Cloud 2026</h2>
+
+        <table>
+            <thead>
+                <tr>
+                    <th>Critère</th>
+                    <th>AWS</th>
+                    <th>Azure</th>
+                    <th>GCP</th>
+                    <th>OVHcloud</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td><strong>Part de marché</strong></td>
+                    <td>31%</td>
+                    <td>25%</td>
+                    <td>11%</td>
+                    <td>3%</td>
+                </tr>
+                <tr>
+                    <td><strong>Régions disponibles</strong></td>
+                    <td>33 régions</td>
+                    <td>60+ régions</td>
+                    <td>40 régions</td>
+                    <td>15 régions</td>
+                </tr>
+                <tr>
+                    <td><strong>Services IA/ML</strong></td>
+                    <td>SageMaker, Bedrock</td>
+                    <td>Azure AI, OpenAI</td>
+                    <td>Vertex AI, Gemini</td>
+                    <td>AI Endpoints</td>
+                </tr>
+                <tr>
+                    <td><strong>Kubernetes managé</strong></td>
+                    <td>EKS</td>
+                    <td>AKS</td>
+                    <td>GKE (leader)</td>
+                    <td>MKS</td>
+                </tr>
+                <tr>
+                    <td><strong>Conformité RGPD</strong></td>
+                    <td>Oui (EU regions)</td>
+                    <td>Oui (EU regions)</td>
+                    <td>Oui (EU regions)</td>
+                    <td>Natif (FR)</td>
+                </tr>
+                <tr>
+                    <td><strong>Prix entrée de gamme</strong></td>
+                    <td>$$</td>
+                    <td>$$</td>
+                    <td>$$ (crédits généreux)</td>
+                    <td>$ (compétitif)</td>
+                </tr>
+                <tr>
+                    <td><strong>Support open-source</strong></td>
+                    <td>★★★★☆</td>
+                    <td>★★★★☆</td>
+                    <td>★★★★★</td>
+                    <td>★★★★★</td>
+                </tr>
+            </tbody>
+        </table>
+    </section>
+
+    <!-- CTA -->
+    <section class="cta-section" id="contact">
+        <h2>Prêt à Transformer Votre Infrastructure ?</h2>
+        <p>Nos experts vous accompagnent dans votre transition technologique. Audit gratuit de votre architecture actuelle.</p>
+        <a href="#" class="cta-button">Demander un Audit Gratuit →</a>
+    </section>
+
+    <!-- FAQ -->
+    <section class="faq-section" id="faq">
+        <h2 style="font-size: 2rem; color: #1a1a2e; margin-bottom: 1.5rem;">Questions Fréquentes</h2>
+
+        <div class="faq-item">
+            <div class="faq-question">Quelle est la différence entre l'IA et le Machine Learning ? <span>▼</span></div>
+            <div class="faq-answer">L'Intelligence Artificielle est un domaine large qui englobe toute technique permettant aux machines de simuler l'intelligence humaine. Le Machine Learning est un sous-ensemble de l'IA qui permet aux systèmes d'apprendre automatiquement à partir des données sans être explicitement programmés.</div>
+        </div>
+        <div class="faq-item">
+            <div class="faq-question">Faut-il migrer vers le cloud ? <span>▼</span></div>
+            <div class="faq-answer">Cela dépend de votre contexte. Le cloud offre élasticité, réduction des coûts opérationnels et innovation rapide. Cependant, les contraintes réglementaires, les coûts à grande échelle et la complexité de migration doivent être évalués. Une approche hybride est souvent recommandée.</div>
+        </div>
+        <div class="faq-item">
+            <div class="faq-question">Comment sécuriser une architecture microservices ? <span>▼</span></div>
+            <div class="faq-answer">Les bonnes pratiques incluent : l'utilisation d'un service mesh (Istio, Linkerd) pour le chiffrement mTLS, la mise en place d'un API Gateway avec rate limiting, l'authentification via OAuth2/OIDC, le scanning régulier des images Docker, et l'adoption du principe de moindre privilège pour chaque service.</div>
+        </div>
+        <div class="faq-item">
+            <div class="faq-question">Qu'est-ce que le DevSecOps ? <span>▼</span></div>
+            <div class="faq-answer">Le DevSecOps intègre la sécurité directement dans le pipeline CI/CD. Au lieu de traiter la sécurité comme une étape finale, elle est automatisée et présente à chaque étape : analyse statique du code (SAST), analyse des dépendances (SCA), tests de sécurité dynamiques (DAST) et monitoring en production.</div>
+        </div>
+    </section>
+</main>
+
+<footer>
+    <div class="footer-grid">
+        <div class="footer-col">
+            <h4>TechVision Pro</h4>
+            <p style="font-size: 0.9rem;">Votre partenaire technologique depuis 2018. Nous aidons les entreprises à naviguer dans la transformation numérique avec expertise et pragmatisme.</p>
+        </div>
+        <div class="footer-col">
+            <h4>Services</h4>
+            <ul>
+                <li><a href="#">Conseil IA</a></li>
+                <li><a href="#">Architecture Cloud</a></li>
+                <li><a href="#">Audit Sécurité</a></li>
+                <li><a href="#">Formation DevOps</a></li>
+            </ul>
+        </div>
+        <div class="footer-col">
+            <h4>Ressources</h4>
+            <ul>
+                <li><a href="#">Blog Technique</a></li>
+                <li><a href="#">Livres Blancs</a></li>
+                <li><a href="#">Webinaires</a></li>
+                <li><a href="#">Newsletter</a></li>
+            </ul>
+        </div>
+        <div class="footer-col">
+            <h4>Contact</h4>
+            <ul>
+                <li>📧 contact@techvision.pro</li>
+                <li>📞 +33 1 23 45 67 89</li>
+                <li>📍 Paris, France</li>
+                <li><a href="#">LinkedIn</a> · <a href="#">Twitter</a> · <a href="#">GitHub</a></li>
+            </ul>
+        </div>
+    </div>
+    <div class="footer-bottom">
+        <p>© 2026 TechVision Pro. Tous droits réservés. | <a href="#" style="color: rgba(255,255,255,0.6);">Mentions légales</a> | <a href="#" style="color: rgba(255,255,255,0.6);">Politique de confidentialité</a></p>
+    </div>
+</footer>
+
+<!-- Scripts d'intégration à ajouter ici pour tester les widgets -->
+<!-- Voir le README pour les instructions -->
+
+</body>
+</html>
