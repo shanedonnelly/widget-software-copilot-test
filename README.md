@@ -1,10 +1,9 @@
 # Widget Software Copilot Test
 
-Projet de test pour intégrer un scraper de contenu web via deux approches :
+Projet de test pour intégrer un scraper de contenu web via trois approches :
 1. **Widget React visible** (bulle en bas à droite) — l'utilisateur autorise la lecture puis envoie le contenu
-2. **Script invisible** — envoie automatiquement le contenu toutes les 5 secondes
-
-Les deux utilisent `@mozilla/readability` + `dom-to-semantic-markdown` pour parser le DOM en markdown sémantique de qualité, et envoient le résultat à un backend FastAPI unique.
+2. **Script invisible (smart)** — envoie automatiquement du markdown sémantique toutes les 5 secondes (utilise readability + d2m)
+3. **Script invisible (dumb)** — envoie les métadonnées + le HTML brut toutes les 5 secondes (aucune dépendance, JS pur)
 
 ---
 
@@ -12,10 +11,11 @@ Les deux utilisent `@mozilla/readability` + `dom-to-semantic-markdown` pour pars
 
 ```
 Port 9000 — Widget React (vite dev server)
-Port 9001 — Fake site (python http.server)
+Port 9001 — Fake site (python3 http.server)
 Port 9002 — Backend FastAPI (uvicorn)
-Port 9003 — Widget dist (http-server, pour le build)
-Port 9004 — Scraper script dist (http-server)
+Port 9003 — Widget dist (python3 http.server)
+Port 9004 — Scraper script dist (python3 http.server)
+Port 9005 — Dumb scraper (python3 http.server)
 ```
 
 ---
@@ -26,7 +26,7 @@ Port 9004 — Scraper script dist (http-server)
 
 ```bash
 cd backend
-python -m venv venv
+python3 -m venv venv
 source venv/bin/activate  # Linux/Mac
 pip install -r requirements.txt
 ```
@@ -35,21 +35,25 @@ pip install -r requirements.txt
 
 ```bash
 cd react-embeddable-widget
-pnpm install
+npm install
 ```
 
-### 3. Script invisible
+### 3. Script invisible (smart)
 
 ```bash
 cd scraper-script
 npm install
 ```
 
+### 4. Script invisible (dumb)
+
+Aucune installation nécessaire — c'est du JS pur.
+
 ---
 
 ## Lancement
 
-Ouvrir **5 terminaux** :
+Ouvrir **6 terminaux** :
 
 ### Terminal 1 — Backend FastAPI
 
@@ -63,30 +67,37 @@ uvicorn main:app --host 0.0.0.0 --port 9002 --reload
 
 ```bash
 cd fake-site
-python -m http.server 9001
+python3 -m http.server 9001
 ```
 
 ### Terminal 3 — Widget React (dev mode)
 
 ```bash
 cd react-embeddable-widget
-pnpm dev
+npm run dev
 ```
 
 ### Terminal 4 — Widget build + serve (pour intégration dans d'autres sites)
 
 ```bash
 cd react-embeddable-widget
-pnpm build:widget
-pnpm serve:widget
+npm run build:widget
+cd dist && python3 -m http.server 9003
 ```
 
-### Terminal 5 — Script invisible build + serve
+### Terminal 5 — Script invisible (smart) build + serve
 
 ```bash
-cd scraper-script
+cd smart-scraper
 npm run build:dev
-npm run serve
+cd dist && python3 -m http.server 9004
+```
+
+### Terminal 6 — Script invisible (dumb) serve
+
+```bash
+cd dumb-scraper
+python3 -m http.server 9005
 ```
 
 ---
@@ -104,42 +115,49 @@ npm run serve
 
 ### Test 2 : Widget intégré sur le fake site
 
-1. Ouvrir `fake-site/index.html` et ajouter **avant `</body>`** :
-   ```html
-   <script async src="http://localhost:9003/widget.js" data-client-key="test-key"></script>
-   ```
-2. Ouvrir `http://localhost:9001`
-3. Utiliser le widget comme au Test 1
-4. Vérifier les logs et les fichiers reçus
+Ajouter **avant `</body>`** dans `fake-site/index.html` :
+```html
+<script async src="http://localhost:9003/widget.js" data-client-key="test-key"></script>
+```
+Puis ouvrir `http://localhost:9001` et utiliser le widget.
 
-### Test 3 : Script invisible sur le fake site
+### Test 3 : Script invisible (smart) sur le fake site
 
-1. Ouvrir `fake-site/index.html` et ajouter **avant `</body>`** :
-   ```html
-   <script async src="http://localhost:9004/scraper.js" data-scraper data-backend-url="http://localhost:9002/api/content"></script>
-   ```
-2. Ouvrir `http://localhost:9001`
-3. Sans rien faire, le script envoie le contenu toutes les 5 secondes
-4. Vérifier les logs du backend et les fichiers dans `backend/received_data/`
+Ajouter **avant `</body>`** dans `fake-site/index.html` :
+```html
+<script async src="http://localhost:9004/scraper.js" data-scraper data-backend-url="http://localhost:9002/api/content"></script>
+```
+Le script envoie le contenu markdown toutes les 5 secondes.
 
-### Test 4 : Les deux en même temps
+### Test 4 : Script invisible (dumb) sur le fake site
 
-Ajouter les deux balises `<script>` dans le fake site pour les tester simultanément.
+Ajouter **avant `</body>`** dans `fake-site/index.html` :
+```html
+<script async src="http://localhost:9005/scraper.js" data-scraper data-backend-url="http://localhost:9002/api/content"></script>
+```
+Le script envoie les métadonnées + le HTML brut toutes les 5 secondes.
+
+### Test 5 : Tout en même temps
+
+Ajouter les trois balises `<script>` dans le fake site pour les tester simultanément.
 
 ---
 
 ## Intégration dans un autre projet web
 
-Pour intégrer le **widget visible** dans n'importe quel site, ajouter cette balise avant `</body>` :
-
+**Widget visible** — ajouter avant `</body>` :
 ```html
 <script async src="http://VOTRE_HOST:9003/widget.js" data-client-key="VOTRE_CLE"></script>
 ```
 
-Pour intégrer le **script invisible** :
-
+**Script invisible (smart)** :
 ```html
 <script async src="http://VOTRE_HOST:9004/scraper.js" data-scraper data-backend-url="http://VOTRE_HOST:9002/api/content"></script>
+```
+
+**Script invisible (dumb)** :
+```html
+<script async src="http://VOTRE_HOST:9005/scraper.js" data-scraper data-backend-url="http://VOTRE_HOST:9002/api/content"></script>
 ```
 
 ---
@@ -158,8 +176,10 @@ Pour intégrer le **script invisible** :
 │   ├── src/widget/             # Code du widget
 │   ├── dist/                   # Build du widget
 │   └── test/                   # Page de test interne
-├── scraper-script/             # Script invisible
+├── scraper-script/             # Script invisible (smart, avec deps)
 │   ├── src/scraper.js
 │   └── dist/                   # Build du script
+├── dumb-scraper/               # Script invisible (dumb, JS pur)
+│   └── scraper.js
 └── README.md
 ```

@@ -45,7 +45,7 @@ async def receive_content(data: PageContent):
     filename = f"{data.source}_{ts}.md"
     filepath = RECEIVED_DATA_DIR / filename
 
-    file_content = f"""---
+    file_content = f"""## meta
 title: "{data.title}"
 url: {data.url}
 source: {data.source}
@@ -53,7 +53,8 @@ timestamp: {data.timestamp}
 received_at: {datetime.now().isoformat()}
 excerpt: "{data.excerpt or ''}"
 byline: "{data.byline or ''}"
----
+
+## html actif
 
 {data.content}
 """
