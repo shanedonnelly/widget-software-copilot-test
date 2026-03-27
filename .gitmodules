@@ -1,0 +1,3 @@
+[submodule "react-embeddable-widget"]
+	path = react-embeddable-widget
+	url = https://github.com/shanedonnelly/widget-software-copilot-test.git
